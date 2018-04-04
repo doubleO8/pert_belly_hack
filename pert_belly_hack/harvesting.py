@@ -61,7 +61,8 @@ class HarvestKeitel(object):
             * Generate github pages content
         """
         self.copy_package()
-        self.update_documentation()
+        if self.doc_path:
+            self.update_documentation()
         self.create_ghpages_index()
         self.create_ghpages_latest_package_link(use_link=False)
 
