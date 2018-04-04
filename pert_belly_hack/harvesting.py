@@ -29,6 +29,8 @@ class HarvestKeitel(object):
             "ghpages_output_path", OUTPUT_PATH)
         self.package_output_path = kwargs.get(
             "package_output_path", PACKAGE_OUTPUT_PATH)
+        self.tag_path_rel = kwargs.get(
+            "tag_path_rel", TAG_PATH_REL)
         self.doc_path = kwargs.get("doc_path")
         if self.doc_path is None and os.path.isdir('./doc'):
             self.doc_path = './doc'
@@ -45,7 +47,7 @@ class HarvestKeitel(object):
             tag_file = os.path.join(self.package_output_path,
                                     TARGET_PATH_REL,
                                     self.package_meta["target_root_path"],
-                                    TAG_PATH_REL)
+                                    self.tag_path_rel)
 
         with open(tag_file, "rb") as tag_src:
             tag_data = json.load(tag_src)
