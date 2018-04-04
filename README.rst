@@ -8,7 +8,7 @@ pages.
 Source Code
 -----------
 
-https://github.com/doubleO8/e2openplugin-OpenWebif/
+https://github.com/doubleO8/pert_belly_hack/
 
 Documentation
 -------------
@@ -25,12 +25,12 @@ Usage
 
 .. code-block:: sh
 
-    # create OPKG contents in subfolder ``./pack/``
+    # create OPKG contents in subfolder `./pack/`
     pbh-prepare
-    # example call for generating ``.opk`` file:
+    # example call for generating `.opk` file:
     ./opkg-utils/opkg-build -O -o 0 -g 0 -Z gzip pack/
 
 .. code-block:: sh
 
-    # create github pages content in ``./pages_out/``
+    # create github pages content in `./pages_out/`
     pbh-harvest
