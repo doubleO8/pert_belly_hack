@@ -29,6 +29,9 @@ class HarvestKeitel(object):
             "ghpages_output_path", OUTPUT_PATH)
         self.package_output_path = kwargs.get(
             "package_output_path", PACKAGE_OUTPUT_PATH)
+        self.doc_path = kwargs.get("doc_path")
+        if self.doc_path is None and os.path.isdir('./doc'):
+            self.doc_path = './doc'
         opkg_filename_template = self.env.get_template('opkg_filename')
         self.package_source = opkg_filename_template.render(
             **self.package_meta).strip()
@@ -135,7 +138,7 @@ class HarvestKeitel(object):
         Update documentation by calling make/sphinx. Copy generated content
         afterwards.
         """
-        subprocess.check_call("make html", cwd='./doc', shell=True)
+        subprocess.check_call("make html", cwd=self.doc_path, shell=True)
         doc_target = os.path.join(self.ghpages_output_path, 'documentation')
 
         if os.path.isdir(doc_target):
@@ -145,4 +148,5 @@ class HarvestKeitel(object):
         with open(mr_hyde, "wb") as tgt:
             tgt.write("NO!")
 
-        shutil.copytree('./doc/build/html', doc_target)
+        build_html = os.path.join(self.doc_path, 'build/html')
+        shutil.copytree(build_html, doc_target)
