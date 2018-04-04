@@ -27,5 +27,6 @@ setup(
     scripts=[
         "pbh-harvest",
         "pbh-prepare",
+        "pbh-clean",
     ]
 )
