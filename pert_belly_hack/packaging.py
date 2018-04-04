@@ -128,11 +128,11 @@ class AlPackino(object):
             self.package_meta["target_root_path"])
         tag_file = os.path.join(target_path, self.tag_path_rel)
 
-        if os.path.isdir(target_path):
-            shutil.rmtree(target_path)
-
-        if not os.path.isdir(self.package_output_path):
-            os.makedirs(self.package_output_path)
+        for needed in (target_path, self.package_output_path, self.ghpages_output_path):
+            if os.path.isdir(needed):
+                shutil.rmtree(needed)
+            if not os.path.isdir(needed):
+                os.makedirs(needed)
 
         for rel_path in source_files(top=self.sources):
             source = os.path.join(self.sources, rel_path)
