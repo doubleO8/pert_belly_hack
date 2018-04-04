@@ -124,10 +124,9 @@ class AlPackino(object):
         verbose = 0
 
         target_path = os.path.join(
-            self.package_output_path, self.target_path_rel)
-        tag_file = os.path.join(target_path,
-                                self.package_meta["target_root_path"],
-                                self.tag_path_rel)
+            self.package_output_path, self.target_path_rel,
+            self.package_meta["target_root_path"])
+        tag_file = os.path.join(target_path, self.tag_path_rel)
 
         if os.path.isdir(target_path):
             shutil.rmtree(target_path)
