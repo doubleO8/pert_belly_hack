@@ -12,22 +12,26 @@ import subprocess
 from jinja2 import Environment, PackageLoader
 
 from pert_belly_hack.defaults import PACKAGE_META
-from pert_belly_hack.defaults import OUTPUT_PATH, LATEST_OPK_PATH_REL
-from pert_belly_hack.defaults import PACKAGE_OUTPUT_PATH, TARGET_PATH_REL
+from pert_belly_hack.defaults import PACKAGE_OUTPUT_PATH
+from pert_belly_hack.defaults import OUTPUT_PATH
+from pert_belly_hack.defaults import TARGET_PATH_REL
 from pert_belly_hack.defaults import TAG_PATH_REL
+from pert_belly_hack.defaults import LATEST_OPK_PATH_REL
 
 
 class HarvestKeitel(object):
     def __init__(self, *args, **kwargs):
         self.env = Environment(
             loader=PackageLoader('pert_belly_hack', 'templates'))
+
+        self.package_meta = kwargs.get("package_meta", PACKAGE_META)
         self.ghpages_output_path = kwargs.get(
             "ghpages_output_path", OUTPUT_PATH)
         self.package_output_path = kwargs.get(
             "package_output_path", PACKAGE_OUTPUT_PATH)
         opkg_filename_template = self.env.get_template('opkg_filename')
         self.package_source = opkg_filename_template.render(
-            **PACKAGE_META).strip()
+            **self.package_meta).strip()
         if not os.path.isdir(self.ghpages_output_path):
             os.makedirs(self.ghpages_output_path)
         self.tag_data = self._load_tag()
@@ -90,7 +94,7 @@ class HarvestKeitel(object):
                     filename='nosetests.xml',
                     description="nosetest results"),
             ],
-            "meta": PACKAGE_META,
+            "meta": self.package_meta,
             "tag_data": self.tag_data,
         }
 

@@ -9,15 +9,18 @@ import glob
 import subprocess
 import json
 import datetime
+import compileall
 
 from jinja2 import Environment, PackageLoader
 
 from pert_belly_hack.defaults import PACKAGE_META
 from pert_belly_hack.defaults import PACKAGE_OUTPUT_PATH
+from pert_belly_hack.defaults import OUTPUT_PATH
+from pert_belly_hack.defaults import TARGET_PATH_REL
+from pert_belly_hack.defaults import TAG_PATH_REL
 
 COMPILE_PO_CALL_FMT = '{binary} -o "{target}" "{source}"'
 COMPILE_CHEETAH_CALL_FMT = '{binary} compile -R "{target}"'
-JINJA_ENV = Environment(loader=PackageLoader('pert_belly_hack', 'templates'))
 
 
 def source_files(top):
@@ -96,76 +99,134 @@ def compile_cheetah(target_path):
         raise ValueError(rc)
 
 
-def create_control():
-    """
-    Create OPKG's control meta file based on *PACKAGE_META* key/value pairs.
-    """
-    control_template = JINJA_ENV.get_template('control')
-    control_content = control_template.render(**PACKAGE_META)
-    control_path = os.path.join(PACKAGE_OUTPUT_PATH, "CONTROL")
-    control_file = os.path.join(control_path, "control")
+class AlPackino(object):
+    def __init__(self, *args, **kwargs):
+        self.env = Environment(
+            loader=PackageLoader('pert_belly_hack', 'templates'))
 
-    if not os.path.isdir(PACKAGE_OUTPUT_PATH):
-        os.makedirs(PACKAGE_OUTPUT_PATH)
+        self.package_meta = kwargs.get("package_meta", PACKAGE_META)
+        self.ghpages_output_path = kwargs.get(
+            "ghpages_output_path", OUTPUT_PATH)
+        self.target_path_rel = kwargs.get(
+            "target_path_rel", TARGET_PATH_REL)
+        self.tag_path_rel = kwargs.get(
+            "tag_path_rel", TAG_PATH_REL)
+        self.package_output_path = kwargs.get(
+            "package_output_path", PACKAGE_OUTPUT_PATH)
 
-    if not os.path.isdir(control_path):
-        os.makedirs(control_path)
+    def prepare(self):
+        try:
+            os.environ["PYTHONOPTIMIZE"]
+        except KeyError as keks:
+            print("Please set PYTHONOPTIMIZE environment variable!")
+            raise
+        verbose = 0
 
-    with open(control_file, "wb") as target:
-        target.write(control_content)
+        sources = './plugin'
+        target_root = self.package_output_path
+        target_path = os.path.join(target_root, self.target_path_rel)
+        tag_file = os.path.join(target_path, self.tag_path_rel)
 
+        if os.path.isdir(target_path):
+            shutil.rmtree(target_path)
 
-def create_tag(tag_file):
-    """
-    Create tag meta file containing version and build information based on
-    *PACKAGE_META* key/value pairs.
+        if not os.path.isdir(target_root):
+            os.makedirs(target_root)
 
-    Args:
-        tag_file (basestring): tag file path
-    """
-    data = {
-        "upstream_version": PACKAGE_META['upstream_version'],
-        "build_date": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "owif_version": "OWIF 1.2.999"
-    }
+        for rel_path in source_files(top=sources):
+            source = os.path.join(sources, rel_path)
+            target = os.path.join(target_path, rel_path)
+            target_dir = os.path.dirname(target)
+            if verbose > 0:
+                print("{!r} -> {!r}".format(source, target))
+            mkdir_intermediate(target_dir)
+            shutil.copy(source, target_dir)
 
-    with open(tag_file, "wb") as tgt:
-        json.dump(data, tgt, indent=2)
+        compile_locales(os.path.abspath('locale'),
+                        os.path.join(target_path, 'locale'))
+        compile_cheetah(target_path)
+        compileall.compile_dir(target_path, maxlevels=100, force=True)
 
+        self.create_control()
+        self.create_tag(tag_file)
+        repo_config_target_filename = self.create_repo_conf(
+            target_root=self.ghpages_output_path)
+        self.create_package_repo_conf(
+            target_root=PACKAGE_OUTPUT_PATH,
+            repo_config_source=repo_config_target_filename)
 
-def create_repo_conf(target_root, repo_config_filename='github_io.conf'):
-    """
-    Cerate OPKG repo configuration file based on *PACKAGE_META*
-    key/value pairs.
+    def create_control(self):
+        """
+        Create OPKG's control meta file based on *self.package_meta*
+        key/value pairs.
+        """
+        control_template = self.env.get_template('control')
+        control_content = control_template.render(**self.package_meta)
+        control_path = os.path.join(PACKAGE_OUTPUT_PATH, "CONTROL")
+        control_file = os.path.join(control_path, "control")
 
-    Args:
-        target_root (basestring): output file path
-        repo_config_filename (basestring): repo configuration basename
+        if not os.path.isdir(PACKAGE_OUTPUT_PATH):
+            os.makedirs(PACKAGE_OUTPUT_PATH)
 
-    Returns:
-        basestring: repo configuration path
-    """
-    repo_config_template = JINJA_ENV.get_template(repo_config_filename)
-    content = repo_config_template.render(**PACKAGE_META)
-    repo_config_target_filename = os.path.join(
-        target_root, repo_config_filename)
+        if not os.path.isdir(control_path):
+            os.makedirs(control_path)
 
-    with open(repo_config_target_filename, "wb") as target:
-        target.write(content)
+        with open(control_file, "wb") as target:
+            target.write(control_content)
 
-    return repo_config_target_filename
+    def create_tag(self, tag_file):
+        """
+        Create tag meta file containing version and build information based on
+        *self.package_meta* key/value pairs.
 
+        Args:
+            tag_file (basestring): tag file path
+        """
+        data = {
+            "upstream_version": self.package_meta['upstream_version'],
+            "build_date": datetime.datetime.utcnow().strftime(
+                "%Y-%m-%d %H:%M:%S"),
+            "owif_version": "OWIF 1.2.999"
+        }
 
-def create_package_repo_conf(target_root, repo_config_source,
-                             repo_config_filename='package_name_here.conf'):
-    """
+        with open(tag_file, "wb") as tgt:
+            json.dump(data, tgt, indent=2)
 
-    Args:
-        target_root (basestring): path where configuration file will be copied to  #NOQA
-        repo_config_source (basestring): repo configuration source
-        repo_config_filename (basestring): repo configuration basename
-    """
-    package_etc_opkg = os.path.join(target_root, 'etc/opkg')
-    package_repo_config = os.path.join(package_etc_opkg, repo_config_filename)
-    mkdir_intermediate(package_etc_opkg)
-    shutil.copy(repo_config_source, package_repo_config)
+    def create_repo_conf(
+            self, target_root, repo_config_filename='github_io.conf'):
+        """
+        Cerate OPKG repo configuration file based on *self.package_meta*
+        key/value pairs.
+
+        Args:
+            target_root (basestring): output file path
+            repo_config_filename (basestring): repo configuration basename
+
+        Returns:
+            basestring: repo configuration path
+        """
+        repo_config_template = self.env.get_template(repo_config_filename)
+        content = repo_config_template.render(**self.package_meta)
+        repo_config_target_filename = os.path.join(
+            target_root, repo_config_filename)
+
+        with open(repo_config_target_filename, "wb") as target:
+            target.write(content)
+
+        return repo_config_target_filename
+
+    def create_package_repo_conf(
+            self, target_root, repo_config_source,
+            repo_config_filename='package_name_here.conf'):
+        """
+
+        Args:
+            target_root (basestring): path where configuration file will be copied to  #NOQA
+            repo_config_source (basestring): repo configuration source
+            repo_config_filename (basestring): repo configuration basename
+        """
+        package_etc_opkg = os.path.join(target_root, 'etc/opkg')
+        package_repo_config = os.path.join(package_etc_opkg,
+                                           repo_config_filename)
+        mkdir_intermediate(package_etc_opkg)
+        shutil.copy(repo_config_source, package_repo_config)
