@@ -12,7 +12,8 @@ import datetime
 
 from jinja2 import Environment, PackageLoader
 
-from defaults import PACKAGE_OUTPUT_PATH, PACKAGE_META
+from pert_belly_hack.defaults import PACKAGE_META
+from pert_belly_hack.defaults import PACKAGE_OUTPUT_PATH
 
 COMPILE_PO_CALL_FMT = '{binary} -o "{target}" "{source}"'
 COMPILE_CHEETAH_CALL_FMT = '{binary} compile -R "{target}"'
