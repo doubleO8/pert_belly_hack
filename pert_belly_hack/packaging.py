@@ -114,6 +114,8 @@ class AlPackino(object):
         self.package_output_path = kwargs.get(
             "package_output_path", PACKAGE_OUTPUT_PATH)
         self.sources = kwargs.get("sources", './plugin')
+        self.package_repo_config_filename = kwargs.get(
+            "package_repo_config_filename")
 
     def prepare(self):
         try:
@@ -128,7 +130,13 @@ class AlPackino(object):
             self.package_meta["target_root_path"])
         tag_file = os.path.join(target_path, self.tag_path_rel)
 
-        for needed in (target_path, self.package_output_path, self.ghpages_output_path):
+        needed_folders = (
+            target_path,
+            self.package_output_path,
+            self.ghpages_output_path,
+        )
+
+        for needed in needed_folders:
             if os.path.isdir(needed):
                 shutil.rmtree(needed)
             if not os.path.isdir(needed):
@@ -152,9 +160,14 @@ class AlPackino(object):
         self.create_tag(tag_file)
         repo_config_target_filename = self.create_repo_conf(
             target_root=self.ghpages_output_path)
-        self.create_package_repo_conf(
-            target_root=self.package_output_path,
-            repo_config_source=repo_config_target_filename)
+
+        if self.package_repo_config_filename:
+            self.create_package_repo_conf(
+                target_root=self.package_output_path,
+                repo_config_source=repo_config_target_filename,
+                repo_config_filename=os.path.basename(
+                    self.package_repo_config_filename)
+            )
 
     def create_control(self):
         """
