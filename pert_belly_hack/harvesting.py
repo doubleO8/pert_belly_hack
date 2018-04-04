@@ -34,13 +34,19 @@ class HarvestKeitel(object):
             **self.package_meta).strip()
         if not os.path.isdir(self.ghpages_output_path):
             os.makedirs(self.ghpages_output_path)
-        self.tag_data = self._load_tag()
+        tag_file = kwargs.get("tag_file")
+        self.tag_data = self._load_tag(tag_file)
 
-    def _load_tag(self):
-        tag_file = os.path.join(
-            self.package_output_path, TARGET_PATH_REL, TAG_PATH_REL)
+    def _load_tag(self, tag_file=None):
+        if not tag_file:
+            tag_file = os.path.join(self.package_output_path,
+                                    TARGET_PATH_REL,
+                                    self.package_meta["target_root_path"],
+                                    TAG_PATH_REL)
+
         with open(tag_file, "rb") as tag_src:
             tag_data = json.load(tag_src)
+
         return tag_data
 
     def harvest(self):

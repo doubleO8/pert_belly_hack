@@ -113,6 +113,7 @@ class AlPackino(object):
             "tag_path_rel", TAG_PATH_REL)
         self.package_output_path = kwargs.get(
             "package_output_path", PACKAGE_OUTPUT_PATH)
+        self.sources = kwargs.get("sources", './plugin')
 
     def prepare(self):
         try:
@@ -122,19 +123,20 @@ class AlPackino(object):
             raise
         verbose = 0
 
-        sources = './plugin'
-        target_root = self.package_output_path
-        target_path = os.path.join(target_root, self.target_path_rel)
-        tag_file = os.path.join(target_path, self.tag_path_rel)
+        target_path = os.path.join(
+            self.package_output_path, self.target_path_rel)
+        tag_file = os.path.join(target_path,
+                                self.package_meta["target_root_path"],
+                                self.tag_path_rel)
 
         if os.path.isdir(target_path):
             shutil.rmtree(target_path)
 
-        if not os.path.isdir(target_root):
-            os.makedirs(target_root)
+        if not os.path.isdir(self.package_output_path):
+            os.makedirs(self.package_output_path)
 
-        for rel_path in source_files(top=sources):
-            source = os.path.join(sources, rel_path)
+        for rel_path in source_files(top=self.sources):
+            source = os.path.join(self.sources, rel_path)
             target = os.path.join(target_path, rel_path)
             target_dir = os.path.dirname(target)
             if verbose > 0:
@@ -152,7 +154,7 @@ class AlPackino(object):
         repo_config_target_filename = self.create_repo_conf(
             target_root=self.ghpages_output_path)
         self.create_package_repo_conf(
-            target_root=PACKAGE_OUTPUT_PATH,
+            target_root=self.package_output_path,
             repo_config_source=repo_config_target_filename)
 
     def create_control(self):

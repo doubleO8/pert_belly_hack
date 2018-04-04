@@ -7,6 +7,7 @@ PACKAGE_META = {
     "package": "enigma2-plugin-extensions-openwebif",
     "upstream_version": __version__,
     "epoch": 1,
+    "target_root_path": "OpenWebif"
 }
 
 #: path for github-pages
@@ -16,7 +17,7 @@ OUTPUT_PATH = 'pages_out'
 PACKAGE_OUTPUT_PATH = 'pack'
 
 #: relative path on enigma2 device
-TARGET_PATH_REL = 'usr/lib/enigma2/python/Plugins/Extensions/OpenWebif'
+TARGET_PATH_REL = 'usr/lib/enigma2/python/Plugins/Extensions'
 
 #: relative path to be used for the 'latest opk' symlink
 LATEST_OPK_PATH_REL = 'latest.opk'
