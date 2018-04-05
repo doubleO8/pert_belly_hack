@@ -114,7 +114,6 @@ class HarvestKeitel(object):
         index_template = self.env.get_template('index.html')
         index_filename = os.path.join(self.ghpages_output_path, "index.html")
 
-
         index_content = {
             "files": list(self._files_in_generator()),
             "meta": self.package_meta,
