@@ -76,36 +76,47 @@ class HarvestKeitel(object):
             self.ghpages_output_path, os.path.basename(self.package_source))
         shutil.copy(self.package_source, tgt_filename)
 
+    def _files_in_generator(self):
+        files_in = [
+            dict(
+                filename=os.path.basename(self.package_source),
+                description="latest release"),
+            dict(
+                filename='flake8_report.txt',
+                description="flake8 report"),
+            dict(
+                filename='jshint_report.txt',
+                description="JsHint report"),
+            dict(
+                filename='github_io.conf',
+                description="opkg feed configuration file"),
+            dict(
+                filename='documentation/index.html',
+                description="documentation"),
+            dict(
+                filename='cover/index.html',
+                description="coverage"),
+            dict(
+                filename='nosetests.xml',
+                description="nosetest results")
+        ]
+
+        for item in files_in:
+            abs_path = os.path.join(self.ghpages_output_path,
+                                    item['filename'])
+            if os.path.exists(abs_path):
+                yield item
+
     def create_ghpages_index(self):
         """
         Create `index.html` for github pages.
         """
         index_template = self.env.get_template('index.html')
         index_filename = os.path.join(self.ghpages_output_path, "index.html")
+
+
         index_content = {
-            "files": [
-                dict(
-                    filename=os.path.basename(self.package_source),
-                    description="latest release"),
-                dict(
-                    filename='flake8_report.txt',
-                    description="flake8 report"),
-                dict(
-                    filename='jshint_report.txt',
-                    description="JsHint report"),
-                dict(
-                    filename='github_io.conf',
-                    description="opkg feed configuration file"),
-                dict(
-                    filename='documentation/index.html',
-                    description="documentation"),
-                dict(
-                    filename='cover/index.html',
-                    description="coverage"),
-                dict(
-                    filename='nosetests.xml',
-                    description="nosetest results"),
-            ],
+            "files": list(self._files_in_generator()),
             "meta": self.package_meta,
             "tag_data": self.tag_data,
         }
