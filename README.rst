@@ -13,7 +13,7 @@ https://github.com/doubleO8/pert_belly_hack/
 Documentation
 -------------
 
-https://doubleo8.github.io/e2openplugin-OpenWebif/documentation/packaging.html
+https://doubleo8.github.io/e2openplugin-OpenWebif/backend/documentation/packaging.html
 
 Project Page
 ------------
@@ -22,6 +22,11 @@ https://doubleo8.github.io/e2openplugin-OpenWebif/
 
 Usage
 =====
+
+.. code-block:: sh
+
+    # remove (temporary) build, cache and artefact files and folders
+    pbh-clean
 
 .. code-block:: sh
 
@@ -34,3 +39,8 @@ Usage
 
     # create github pages content in `./pages_out/`
     pbh-harvest
+
+.. code-block:: sh
+
+    # create github pages index of content in `./pages_out/`
+    pbh-umbrella
