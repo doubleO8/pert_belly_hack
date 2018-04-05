@@ -28,5 +28,6 @@ setup(
         "pbh-harvest",
         "pbh-prepare",
         "pbh-clean",
+        "pbh-umbrella"
     ]
 )
