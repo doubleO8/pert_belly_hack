@@ -39,10 +39,17 @@ class SofiaUmbrella(object):
         with open(mr_hyde, "wb") as tgt:
             tgt.write("NO!")
 
+        repoconf_path = self.create_ghpages_repo_conf()
+
         index_content = {
             "index_files": [],
             "opk_files": [],
             "meta": self.package_meta,
+            "repoconf": {
+                "filename": os.path.relpath(repoconf_path,
+                                            self.ghpages_output_path),
+                "description": os.path.basename(repoconf_path)
+            }
         }
 
         for root, _, files in os.walk(self.ghpages_output_path):
@@ -81,3 +88,16 @@ class SofiaUmbrella(object):
 
         with open(index_filename, "wb") as target:
             target.write(index_template.render(**index_content))
+
+    def create_ghpages_repo_conf(self):
+        """
+        Create `index.html` for github pages.
+        """
+        repoconf_template = self.env.get_template('github_io.conf')
+        repoconf_path = os.path.join(self.ghpages_output_path,
+                                      "pert_belly_hack.conf")
+
+        with open(repoconf_path, "wb") as target:
+            target.write(repoconf_template.render())
+
+        return repoconf_path

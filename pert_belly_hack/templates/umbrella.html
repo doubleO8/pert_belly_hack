@@ -7,6 +7,16 @@
 
 <body>
 
+<h2>OPKG repository</h2>
+
+<div>
+<pre>
+# Remotely logged in via SSH to enigma2 device
+
+wget -q <a href="{{ repoconf.filename|e }}">https://doubleo8.github.io/e2openplugin-OpenWebif/{{ repoconf.description|e }}</a> -O /etc/opkg/{{ repoconf.description|e }}                                         # import repository
+</pre>
+</div>
+
 <h2>Packages</h2>
 <ul>
     {% for item in opk_files %}
