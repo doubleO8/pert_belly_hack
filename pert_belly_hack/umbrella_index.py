@@ -58,8 +58,7 @@ class SofiaUmbrella(object):
                     index_content['index_files'].append(
                         {
                             "filename": rel_path,
-                            "description": os.path.basename(
-                                os.path.dirname(rel_path))
+                            "description": rel_path
                         }
                     )
 
