@@ -24,12 +24,12 @@ if __name__ == '__main__':
         "./doc/build/"
         "./dist/",
         ".sass-cache/",
-        "*.opk"
     ]
 
     EXTENSIONS = [
         '.pyo',
-        '.pyc'
+        '.pyc',
+        '.opk'
     ]
 
     for root, _, files in os.walk('.'):
